@@ -18,18 +18,17 @@ export function Player({
     let hls: { destroy: () => void } | null = null;
 
     const start = async () => {
-      if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        video.src = src;
-        return;
-      }
       const hlsModule = await import("hls.js");
       if (cancelled) return;
       const Factory = hlsModule.default;
-      if (!Factory.isSupported()) return;
-      const instance = new Factory();
-      instance.loadSource(src);
-      instance.attachMedia(video);
-      hls = instance;
+      if (Factory.isSupported()) {
+        const instance = new Factory();
+        instance.loadSource(src);
+        instance.attachMedia(video);
+        hls = instance;
+        return;
+      }
+      video.src = src;
     };
 
     void start();
