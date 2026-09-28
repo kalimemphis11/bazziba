@@ -10,6 +10,7 @@ import {
 import type {
   NavCategory,
   Playback,
+  StreamStatus,
   VideoCardData,
   VideoRail,
 } from "@/lib/types";
@@ -271,6 +272,22 @@ export async function getVideoTotal(
   return total;
 }
 
+async function probeStream(url: string): Promise<StreamStatus> {
+  try {
+    const response = await fetch(url, {
+      headers: { "user-agent": headers["user-agent"] },
+      signal: AbortSignal.timeout(12_000),
+      redirect: "follow",
+    });
+    const body = (await response.text()).slice(0, 1500);
+    if (response.ok && body.includes("#EXTM3U")) return "ready";
+    if (/suspended|not configured/i.test(body)) return "suspended";
+    return "unavailable";
+  } catch {
+    return "unavailable";
+  }
+}
+
 export async function getPlayback(hash: string): Promise<Playback | null> {
   const html = await wpHtml(`/video/${encodeURIComponent(hash)}/`);
   const id = Number(
@@ -285,9 +302,21 @@ export async function getPlayback(hash: string): Promise<Playback | null> {
   const likes = toText(
     html.match(/like-count[^>]*>([\s\S]*?)</)?.[1] ?? "",
   );
+  const hlsUrl = parseSettings(html);
+  const streamStatus = hlsUrl ? await probeStream(hlsUrl) : "unavailable";
+  let streamHost: string | null = null;
+  if (hlsUrl) {
+    try {
+      streamHost = new URL(hlsUrl).host;
+    } catch {
+      streamHost = null;
+    }
+  }
   return {
     id,
-    hlsUrl: parseSettings(html),
+    hlsUrl,
+    streamStatus,
+    streamHost,
     viewsLabel: views || null,
     likesLabel: likes || null,
   };

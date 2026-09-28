@@ -23,9 +23,13 @@ export type NavCategory = {
   count: number;
 };
 
+export type StreamStatus = "ready" | "suspended" | "unavailable";
+
 export type Playback = {
   id: number;
   hlsUrl: string | null;
+  streamStatus: StreamStatus;
+  streamHost: string | null;
   viewsLabel: string | null;
   likesLabel: string | null;
 };

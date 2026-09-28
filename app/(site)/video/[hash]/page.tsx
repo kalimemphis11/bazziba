@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Player } from "@/components/video/player";
+import { StreamNotice } from "@/components/video/stream-notice";
 import { VideoRailView } from "@/components/video/video-rail";
 import { formatRelative, formatWhen } from "@/lib/format";
 import { paragraphs, toText } from "@/lib/text";
@@ -51,15 +52,14 @@ export default async function WatchPage({
     <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
       <article>
         <div className="overflow-hidden rounded-xl bg-well">
-          {playback.hlsUrl ? (
+          {playback.streamStatus === "ready" && playback.hlsUrl ? (
             <Player src={playback.hlsUrl} poster={poster} />
           ) : (
-            <p className="grid aspect-video place-items-center px-6 text-center text-sm text-muted">
-              Sorgente non disponibile in questa anteprima.{" "}
-              <a className="text-accent" href={`https://bazziba.it/video/${hash}/`}>
-                Aprilo sul sito attuale
-              </a>
-            </p>
+            <StreamNotice
+              status={playback.streamStatus}
+              host={playback.streamHost}
+              poster={poster}
+            />
           )}
         </div>
         <h1 className="mt-4 text-xl font-semibold tracking-tight">

@@ -30,7 +30,7 @@ export function VideoCard({
               src={video.poster}
               alt=""
               fill
-              sizes="280px"
+              sizes="(min-width: 1280px) 320px, (min-width: 640px) 50vw, 100vw"
               priority={priority}
               className="object-cover"
             />
